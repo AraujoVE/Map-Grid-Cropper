@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PDF RPG Image Splitter</title>
+    <link rel="stylesheet" href="css/styles.css" type="text/css">
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/chosePdfFile.js"></script>
+    <script src="scripts/dragAndDropFunctions.js"></script>
+    <script src="scripts/adjustMap.js"></script>
+    <script src="scripts/updateImage.js"></script>
+    <script src="scripts/pdfImgExtraction.js"></script>
+    <script src="scripts/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>A website that helps you unpack and adjust your RPG PDFs</h1>
+    </header>
+    <main>
+        <section id="first-section">
+            <h2>Insert your PDF file</h2>
+            <form id="pdf-input">
+                <label id="drop-zone">
+                    <label for="file-upload" class="custom-file-upload">
+                        Choose a PDF
+                    </label>
+                    <input id="file-upload" type="file" accept="application/pdf" />
+                    <br/>
+                    or drop it here
+                </label>
+                <br/>
+                <span id="file-selected"></span>
+            </form>
+            <div class="loader" id="pdf-upload-loader"></div>
+            <div id="pdf-extraction">
+                <div id="pdf-image"></div>
+                <div id="pdf-extraction-actions">
+                    <button id="cancel-extraction">Cancel PDF Upload</button>
+                    <button id="approve-extraction">Extract PDF Images</button>
+                </div>
+            </div>
+        </section>
+        <section id="second-section-header">
+            <h2>Extracted Images</h2>
+            <button id="download-zip">Download Extracted Images</button>
+            <div class="loader" id="pdf-extraction-loader"></div>
+        </section>
+        <div id="second-section-div"></div>
+    </main>
+</body>
+</html>
