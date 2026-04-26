@@ -19,42 +19,69 @@ function handleCancelExtraction(ev){
 
 }
 
+function allSidesUrls(imgObj){
+
+}
+
 function loadImage(imgObj, imageCount, p, isUrl = false) {
     const mainDiv = document.getElementById("second-section-div");
     const imgSrc = isUrl === true ? imgObj : URL.createObjectURL(imgObj);
     const imgExtractedSection = document.createElement("section");
-    imgExtractedSection.classList.add("extracted-img-section");
+    imgExtractedSection.classList.add("col");
+    imgExtractedSection.classList.add("gap-12");
     imgExtractedSection.id = `extracted-image-${p}-${imageCount}`;
     imgExtractedSection.setAttribute("name", `${p}-${imageCount}`);
 
     const html = `
-        <div class="extracted-img-div" id="original-extracted-image-${p}-${imageCount}">
-            <a style="cursor:pointer;" title="Click to download the single image." id="old-image-name-${p}-${imageCount}" download="Image_${p}_${imageCount}.png" href="${imgSrc}">Image_${p}_${imageCount}.png</a>
-            <img id="old-image-content-${p}-${imageCount}" src="${imgSrc}" style="width:100%;" />
-        </div>
-        <div class="extracted-img-inner">
-            <div class="vertical-form">
-                <label for="extracted-img-name-${p}-${imageCount}"><h3>Image Name</h3></label>
-                <input type="text" id="extracted-img-name-${p}-${imageCount}" value="Image_${p}_${imageCount}">                
-                <label for="extracted-img-transformation-${p}-${imageCount}"><h3>Image Transformation</h3></label>
-                <select class="update-select" id="extracted-img-transformation-${p}-${imageCount}">
-                    <option value="none">None</option>
-                    <option value="delete">Delete</option>
-                    <option value="adjust-map">Adjust Map</option>
-                </select>
-                <button name="${p}-${imageCount}" id="update-image-button-${p}-${imageCount}" class="update-image">Update Image</button>
+        <div class="row full-width gap-12">
+            <div class="flex-1">
+                <div class="extracted-img-div col full-height full-width" id="original-extracted-image-${p}-${imageCount}">
+                    <a style="cursor:pointer;" title="Click to download the single image." id="old-image-name-${p}-${imageCount}" download="Image_${p}_${imageCount}.png" href="${imgSrc}">Image_${p}_${imageCount}.png</a>
+                    <img id="old-image-content-${p}-${imageCount}" src="${imgSrc}" style="width:100%;" />
+                </div>
+            </div>
+
+            <div class="flex-1">
+                <div class="extracted-img-inner col full-height full-width">
+                    <div class="vertical-form">
+                        <label for="extracted-img-name-${p}-${imageCount}"><h3>Image Name</h3></label>
+                        <input type="text" id="extracted-img-name-${p}-${imageCount}" value="Image_${p}_${imageCount}">                
+                        <label for="extracted-img-transformation-${p}-${imageCount}"><h3>Image Transformation</h3></label>
+                        <select name="${p}-${imageCount}" class="update-select" id="extracted-img-transformation-${p}-${imageCount}">
+                            <option value="rotate-0">None</option>
+                            <option value="rotate-90">Rotate 90°</option>
+                            <option value="rotate-180">Rotate 180°</option>
+                            <option value="rotate-270">Rotate 270°</option>
+                            <option value="delete">Delete</option>
+                            <option value="adjust-map-0">Adjust Map</option>
+                            <option value="adjust-map-90">Adjust Map Rotated 90°</option>
+                            <option value="adjust-map-180">Adjust Map Rotated 180°</option>
+                            <option value="adjust-map-270">Adjust Map Rotated 270°</option>
+                        </select>
+                        <button name="${p}-${imageCount}" id="update-image-button-${p}-${imageCount}" class="increase-size-button spaced-32 blue-button-color">Update Image</button>
+                        <button name="${p}-${imageCount}" id="delete-image-button-${p}-${imageCount}" class="increase-size-button spaced-32 red-button-color">Delete Image</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1">
+                <div class="extracted-img-div col full-height full-width" id="updated-extracted-image-${p}-${imageCount}">
+                    <a style="cursor:pointer;" title="Click to download the single image." id="new-image-name-${p}-${imageCount}" download="Image_${p}_${imageCount}.png" href="${imgSrc}">Image_${p}_${imageCount}.png</a>            
+                    <p id="no-image-${p}-${imageCount}" style="display:none;">This image will not be downloaded.</p>
+                    <img id="new-image-content-${p}-${imageCount}" src="${imgSrc}" style="width:100%;" />
+                </div>
             </div>
         </div>
-        <div class="extracted-img-div" id="updated-extracted-image-${p}-${imageCount}">
-            <a style="cursor:pointer;" title="Click to download the single image." id="new-image-name-${p}-${imageCount}" download="Image_${p}_${imageCount}.png" href="${imgSrc}">Image_${p}_${imageCount}.png</a>            
-            <p id="no-image-${p}-${imageCount}" style="display:none;">This image will not be downloaded.</p>
-            <img id="new-image-content-${p}-${imageCount}" src="${imgSrc}" style="width:100%;" />
-        </div>
-    `
+        <div class="row full-width gap-12" id="map-adjust-${p}-${imageCount}"></div>
+    `;
     imgExtractedSection.innerHTML = html;
     mainDiv.appendChild(imgExtractedSection)
+    const updateSelect = document.getElementById(`extracted-img-transformation-${p}-${imageCount}`);
+    updateSelect.addEventListener("change", updateSelectSubOptions);
     const updateImageButton = document.getElementById(`update-image-button-${p}-${imageCount}`);
     updateImageButton.addEventListener("click", updateExtractedImage);
+    const deleteImageButton = document.getElementById(`delete-image-button-${p}-${imageCount}`);
+    deleteImageButton.addEventListener("click", deleteExtractedImage);
 }
 
 async function getObjectWithTimeout(page, objId, timeout = 1000) {
@@ -87,7 +114,6 @@ async function checkValidImage(page, ops, seen, i, imgCount, p){
     try {
         const args = ops.argsArray[i];
         const objId = args[0];
-        console.log("Before image promise");
 
         let img;
 
@@ -98,17 +124,13 @@ async function checkValidImage(page, ops, seen, i, imgCount, p){
             return imgCount;
         }
 
-        console.log("Before check type");
         if (img.data) {
-            console.log("IMGDATA");
             if (img.width < 50 || img.height < 50) {
-                console.log("Pre return <50");
                 return;
             }
 
             const key = `${img.width}-${img.height}-${img.data.length}`;
             if (seen.has(key)) {
-                console.log("Pre return seen");
                 return;                
             }
             seen.add(key);
@@ -131,7 +153,6 @@ async function checkValidImage(page, ops, seen, i, imgCount, p){
             loadImage(blob, imgCount, p);
         }
         else if (img.bitmap) {
-            console.log("BITMAP");
 
             const canvas = document.createElement("canvas");
             const ctx = canvas.getContext("2d");
@@ -148,7 +169,6 @@ async function checkValidImage(page, ops, seen, i, imgCount, p){
             loadImage(blob, imgCount, p);
         }
         else if (img.src) {
-            console.log("SRC");
             imgCount += 1;
             loadImage(img.src, imgCount, p, true)
         }
@@ -163,6 +183,9 @@ async function checkValidImage(page, ops, seen, i, imgCount, p){
 }
 
 async function extractPdfImages(file) {
+    const extractPdfEl = document.getElementById("approve-extraction");
+    const cancelPdfEl = document.getElementById("cancel-extraction");
+
     activateById("second-section-header");
     activateById("second-section-div");
     activateById("pdf-extraction-loader");
@@ -175,28 +198,31 @@ async function extractPdfImages(file) {
         let imgCount = -1;
         const page = await pdf.getPage(p);
         const ops = await page.getOperatorList();
-        console.log(`Page = ${p} with ${ops.fnArray.length} ops`);
         for (let i = 0; i < ops.fnArray.length; i++) {
-            console.log("Inside ops");
             const fn = ops.fnArray[i];
             if (
                 fn === pdfjsLib.OPS.paintImageXObject ||
                 fn === pdfjsLib.OPS.paintJpegXObject ||
                 fn === pdfjsLib.OPS.paintInlineImageXObject
             ) {
-                console.log("Valid Fn");
                 imgCount = await checkValidImage(page, ops, seen, i, imgCount, p);
             }
         }
     }
     deactivateById("pdf-extraction-loader");
     activateById("download-zip");
+    extractPdfEl.innerHTML = "PDF Images Extracted";
+    cancelPdfEl.disabled = false;
+
     URL.revokeObjectURL(url);
 }
 
 function handleApproveExtraction(ev){
     const extractPdfEl = document.getElementById("approve-extraction");
+    const cancelPdfEl = document.getElementById("cancel-extraction");
     extractPdfEl.disabled = true;
+
+    cancelPdfEl.disabled = true;
     extractPdfEl.innerHTML = "Extracting PDF";
 
     const fileInput = document.getElementById("file-upload");
@@ -214,7 +240,6 @@ async function handleDownloadZip(_){
     downloadButton.disabled = true;
     downloadButton.innerHTML = "Downloading Zip File"
 
-    console.log("Inside Download Zip");
     const zip = new JSZip();
     const pdfEl = document.getElementById("pdf-name");
 
@@ -238,9 +263,6 @@ async function handleDownloadZip(_){
     link.href = url;
     link.download = `${pdfEl.innerHTML}__extracted_images.zip`;
     link.click();
-
-    const extractPdfEl = document.getElementById("approve-extraction");
-    extractPdfEl.innerHTML = "PDF Images Extracted";
 
     deactivateById("pdf-extraction-loader");
     downloadButton.disabled = false;

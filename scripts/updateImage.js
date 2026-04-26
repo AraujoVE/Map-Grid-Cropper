@@ -1,24 +1,13 @@
-function updateImgName(defaultName){
-    const nameInputEl = document.getElementById(`extracted-img-name-${defaultName}`);
-    const newImgNameEl = document.getElementById(`new-image-name-${defaultName}`);
-
-    const newName = `${nameInputEl.value}.png`;
-
-    newImgNameEl.setAttribute("download", newName);
-    newImgNameEl.innerHTML = newName;
-}
-
-function noImgChange(defaultName){
+function noImgChange(defaultName, rotation){
     const originalImg = document.getElementById(`old-image-content-${defaultName}`);
-    const newImg = document.getElementById(`new-image-content-${defaultName}`);
+    const rotatedCanvas = getRotatedCanvas(originalImg, rotation);
+    updateImgUrl(defaultName, rotatedCanvas);
     const newTitle = document.getElementById(`new-image-name-${defaultName}`); 
     const noImgMsg = document.getElementById(`no-image-${defaultName}`);
-    const originalUrl = originalImg.getAttribute("src");
 
-    newImg.setAttribute("src",originalUrl);
-    newTitle.setAttribute("href",originalUrl)
     newTitle.style.display = "inline";
     noImgMsg.style.display = "none";
+    updateImgName(defaultName);
 }
 
 function ignoreImage(defaultName){
@@ -33,52 +22,48 @@ function ignoreImage(defaultName){
     noImgMsg.style.display = "inline";
 }
 
-async function updateImgUrl(defaultName, newImgCanvas){
-    const blob = await new Promise(resolve => newImgCanvas.toBlob(resolve));
-    const newImgUrl = URL.createObjectURL(blob);
-    const newImg = document.getElementById(`new-image-content-${defaultName}`);
-    const newTitle = document.getElementById(`new-image-name-${defaultName}`);
-
-    newImg.setAttribute("src",newImgUrl);
-    newTitle.setAttribute("href",newImgUrl);
-}
-
-async function complexImgAdjustments(defaultName, updateImgMode){
-    // const newTitle = document.getElementById(`new-image-name-${defaultName}`); 
-    // const noImgMsg = document.getElementById(`no-image-${defaultName}`);
-    // newTitle.style.display = "inline";
-    // noImgMsg.style.display = "none";
-
-    const imgEl = document.getElementById(`old-image-content-${defaultName}`);
-    const {canvas, ctx} = await getImgObj(imgEl);
-
-
-    // if (updateImgMode == "adjust-map"){
-    //     const newImgCanvas = await adjustMap(canvas, ctx);
-    //     updateImgUrl(defaultName, newImgCanvas);
-    // }
-}
-
-function updateImgByMode(defaultName){
-    const selectEl = document.getElementById(`extracted-img-transformation-${defaultName}`);
-    const updateImgMode = selectEl.value;
-
-    if (updateImgMode === "none"){
-        noImgChange(defaultName);
+function updateImgByMode(defaultName, updateImgMode){
+    if (updateImgMode.startsWith("rotate")){
+        noImgChange(defaultName, updateImgMode.split("rotate-")[1]);
     }
     else if (updateImgMode === "delete"){
         ignoreImage(defaultName);
-    }
-    else {
-        complexImgAdjustments(defaultName, updateImgMode);
     }
 }
 
 function updateExtractedImage(ev) {
     const button = ev.target;
     const defaultName = button.name;
-    updateImgName(defaultName);
-    updateImgByMode(defaultName);
+    const selectEl = document.getElementById(`extracted-img-transformation-${defaultName}`);
+    const updateImgMode = selectEl.value;
 
-    console.log(defaultName);
+    updateImgByMode(defaultName, updateImgMode);
+}
+
+function deleteExtractedImage(ev) {
+    const button = ev.target;
+    const defaultName = button.name;
+    const selectEl = document.getElementById(`extracted-img-transformation-${defaultName}`);
+    selectEl.value = "delete";
+
+    updateImgByMode(defaultName, "delete");
+}
+
+function clearAdjustMap(defaultName){
+    const parentEl = document.getElementById(`map-adjust-${defaultName}`);
+    parentEl.innerHTML = "";
+}
+
+function updateSelectSubOptions(ev){
+    const select = ev.target;
+    const defaultName = select.name;
+    const selectedValue = select.value;
+    const updateImageButton = document.getElementById(`update-image-button-${defaultName}`);
+
+    updateImageButton.disabled = false;
+    if(selectedValue.startsWith("adjust-map")){
+        updateImageButton.disabled = true;        
+        adjustMap(defaultName, selectedValue.split("adjust-map-")[1]);
+    }
+    else clearAdjustMap(defaultName);
 }
