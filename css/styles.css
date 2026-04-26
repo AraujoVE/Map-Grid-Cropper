@@ -785,6 +785,28 @@ input[type="text"]:hover {
     border-color: #b0b0b0;
 }
 
+.youtube-link-button {
+    display: inline-block;
+    padding: 14px 20px;
+    font-size: 1rem;
+    font-weight: 500;
+
+    background: #d32f2f;
+    color: white;
+
+    border-radius: 8px;
+    text-decoration: none;
+
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+    transition: all 0.2s ease;
+}
+
+.youtube-link-button:hover {
+    background: #9a0007;
+    transform: scale(1.05);
+}
+
 @media (max-width: 480px) {
     section {
         border-radius: 8px;
