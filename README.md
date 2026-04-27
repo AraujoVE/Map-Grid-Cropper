@@ -1,0 +1,1 @@
+A tool for extracting images from PDFs and cropping map images to fix grid centering. You can find a tutorial about it on https://www.youtube.com/watch?v=5V3TcvfWsz8 and the webpage on https://araujove.github.io/Map-Grid-Cropper/
